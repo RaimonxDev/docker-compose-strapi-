@@ -1,0 +1,87 @@
+version: '3.3'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - certs:/etc/nginx/certs:ro
+      - vhostd:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+    labels:
+      - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy
+    networks:
+      - strapi-app
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    restart: always
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs:rw
+      - vhostd:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - strapi-app
+
+  strapi:
+    image: strapi/strapi
+    env_file: .env
+    environment:
+      #NODE_ENV: production
+      DATABASE_CLIENT: ${DATABASE_HOST}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PASSWORD}
+      DATABASE_USERNAME: ${DATABASE_NAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      VIRTUAL_PORT: ${VIRTUAL_PORT}
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    volumes:
+      - ./strapi-mastic:/srv/app
+      - ./strapi-mastic:/usr/share/nginx/html:ro
+    expose:
+      - '1337'
+    networks:
+      - strapi-app
+
+  postgres:
+    image: postgres
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${DATABASE_NAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - dataDB:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - strapi-app
+
+  angular:
+    image: raimonxx/mastic:1.0.1
+    expose:
+      - "80"
+    environment:
+      VIRTUAL_HOST: mastic.cl
+      VIRTUAL_PORT: '80'
+      LETSENCRYPT_HOST: mastic.cl
+      LETSENCRYPT_EMAIL: youremail@email.com
+    networks:
+      - strapi-app
+volumes:
+  dataDB:
+  certs:
+  vhostd:
+  html:
+
+networks:
+  strapi-app:
