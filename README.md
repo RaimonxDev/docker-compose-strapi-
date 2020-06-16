@@ -104,7 +104,8 @@ PS: we will create the .env file later to save the sensitive variables
 ```
    Now it is the turn of our database we add a volume to maintain our databases, it will work on port 5432 and we pass the credentials
 
-```postgres:
+```yaml 
+    postgres:
      image: postgres
      env_file: .env
      environment:
@@ -123,7 +124,8 @@ For this example I will use an angular app that will be our frontend
 it works on port 80 and we use expose so that nginx-proxy takes care of redirects
 again we add our variables
 
-```VIRTUAL_HOST: domain.com
+``` yaml 
+VIRTUAL_HOST: domain.com
 VIRTUAL_PORT: '80'
 LETSENCRYPT_HOST: domain.com
 LETSENCRYPT_EMAIL: youremail@email.com 
@@ -146,7 +148,8 @@ and we will change it for our data
 
 we create the volumes and networks
 
-```volumes:
+```yaml
+volumes:
   dataDB:
   certs:
   vhostd:
@@ -157,7 +160,7 @@ networks:
 ```
 now our docker-compose will look like this
 
-```
+```yaml
   
 version: '3.3'
 
@@ -266,15 +269,19 @@ LETSENCRYPT_EMAIL=youremail@email
 to lift our docker-compose
 
 ```cmd 
-cmd docker-compose pull
+docker-compose pull
 ```
 unload all containers or use cache
 
 and to lift our docker-compose we use
 
-```cmd docker-compose up -d```
+```cmd 
+docker-compose up -d
+```
 
 to check the status of our containers
-```cmd docker ps -a```
+```cmd 
+docker ps -a
+```
 
 
